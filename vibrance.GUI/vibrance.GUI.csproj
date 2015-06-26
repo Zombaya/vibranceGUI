@@ -55,7 +55,8 @@
     </StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>setting.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -183,7 +184,6 @@
     <Content Include="AMD\vendor\mvvm\image\twitter.png" />
     <Content Include="FodyWeavers.xml" />
     <EmbeddedResource Include="NVIDIA\vibranceDLL.dll" />
-    <Content Include="setting.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

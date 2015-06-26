@@ -64,16 +64,6 @@ namespace vibrance.GUI
             setGuiEnabledFlag(false);
         }
 
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            if (this.WindowState == FormWindowState.Minimized)
-            {
-                this.notifyIcon.Visible = true;
-                this.notifyIcon.ShowBalloonTip(250);
-                this.Hide();
-            }
-        }
-
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             int vibranceIngameLevel = NvidiaVibranceProxy.NVAPI_MAX_LEVEL, vibranceWindowsLevel = NvidiaVibranceProxy.NVAPI_DEFAULT_LEVEL, refreshRate = 5000;
@@ -206,14 +196,14 @@ namespace vibrance.GUI
 
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            allowVisible = true;
-            this.Show();
+   //         allowVisible = true;
+   //         this.Show();
 
-			this.WindowState = FormWindowState.Normal;
-			this.Visible = true;
+			//this.WindowState = FormWindowState.Normal;
+			//this.Visible = true;
 
-			this.Refresh();
-			this.ShowInTaskbar = true;
+			//this.Refresh();
+			//this.ShowInTaskbar = true;
         }
 
         private void checkBoxKeepActive_CheckedChanged(object sender, EventArgs e)
@@ -372,6 +362,24 @@ namespace vibrance.GUI
         private void buttonPaypal_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start(NvidiaVibranceGUI.paypalDonationLink);
+        }
+
+        private void ShowWindow()
+        {
+            allowVisible = true;
+            this.ShowInTaskbar = true;
+            this.WindowState = FormWindowState.Normal;
+            this.Show();
+        }
+
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ShowWindow();
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowWindow();
         }
     }
 }
