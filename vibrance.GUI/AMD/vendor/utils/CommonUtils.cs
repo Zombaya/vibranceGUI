@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Reflection;
+
+#endregion
 
 namespace gui.app.utils
 {
@@ -22,13 +26,12 @@ namespace gui.app.utils
             string libraryName)
         {
             string tempDllPath;
-            using (Stream s = assembly.GetManifestResourceStream(libraryResourceName))
+            using (var s = assembly.GetManifestResourceStream(libraryResourceName))
             {
-                byte[] data = new BinaryReader(s).ReadBytes((int)s.Length);
+                var data = new BinaryReader(s).ReadBytes((int) s.Length);
 
                 tempDllPath = Path.Combine(GetVibrance_GUI_AppDataPath(), libraryName);
                 File.WriteAllBytes(tempDllPath, data);
-
             }
 
             NativeMethods.LoadLibrary(libraryName);

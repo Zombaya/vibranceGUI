@@ -1,4 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿#region
+
+using System.Runtime.InteropServices;
+
+#endregion
 
 namespace gui.app.gpucontroller.amd.adl64
 {
@@ -7,10 +11,8 @@ namespace gui.app.gpucontroller.amd.adl64
     {
         internal ADLDisplayID DisplayID;
         internal int DisplayControllerIndex;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ADL.ADL_MAX_PATH)]
-        internal string DisplayName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ADL.ADL_MAX_PATH)]
-        internal string DisplayManufacturerName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)] internal string DisplayName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ADL.ADL_MAX_PATH)] internal string DisplayManufacturerName;
         internal int DisplayType;
         internal int DisplayOutputType;
         internal int DisplayConnector;

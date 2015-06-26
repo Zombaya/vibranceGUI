@@ -1,12 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Windows;
 using gui.app.gpucontroller.amd.adl64;
-using gui.app.mvvm.model;
-using System.Diagnostics;
-using System.Threading;
 using vibrance.GUI.AMD.vendor;
+
+#endregion
 
 namespace gui.app.gpucontroller.amd64
 {
@@ -32,16 +32,16 @@ namespace gui.app.gpucontroller.amd64
 
         public override void SetSaturationOnAllDisplays(int vibranceLevel)
         {
-            this.SetSaturationOnDisplay(vibranceLevel, null);
+            SetSaturationOnDisplay(vibranceLevel, null);
         }
 
         public override void SetSaturationOnDisplay(int vibranceLevel, string displayName)
         {
             SetSaturation((adlDisplayInfo, adlAdapterInfo, adapterIndex) =>
             {
-                int infoValue = adlDisplayInfo.DisplayID.DisplayLogicalIndex;
+                var infoValue = adlDisplayInfo.DisplayID.DisplayLogicalIndex;
 
-                bool adapterIsAssociatedWithDisplay = adapterIndex == adlDisplayInfo.DisplayID.DisplayLogicalAdapterIndex;
+                var adapterIsAssociatedWithDisplay = adapterIndex == adlDisplayInfo.DisplayID.DisplayLogicalAdapterIndex;
                 if (infoValue != -1 && adapterIsAssociatedWithDisplay && adlAdapterInfo.DisplayName == displayName)
                 {
                     ADL.ADL_Display_Color_Set(
@@ -55,7 +55,7 @@ namespace gui.app.gpucontroller.amd64
 
         private void SetSaturation(Action<ADLDisplayInfo, ADLAdapterInfo, int> handle, string displayName)
         {
-            int numberOfAdapters = 0;
+            var numberOfAdapters = 0;
 
             ADL.ADL_Main_Control_Create(ADL.ADL_Main_Memory_Alloc, 1);
 
@@ -68,30 +68,31 @@ namespace gui.app.gpucontroller.amd64
 
             if (numberOfAdapters > 0)
             {
-                ADLAdapterInfoArray osAdapterInfoData = new ADLAdapterInfoArray();
+                var osAdapterInfoData = new ADLAdapterInfoArray();
 
                 if (ADL.ADL_Adapter_AdapterInfo_Get != null)
                 {
-                    int size = Marshal.SizeOf(osAdapterInfoData);
-                    IntPtr adapterBuffer = Marshal.AllocCoTaskMem(size);
+                    var size = Marshal.SizeOf(osAdapterInfoData);
+                    var adapterBuffer = Marshal.AllocCoTaskMem(size);
                     Marshal.StructureToPtr(osAdapterInfoData, adapterBuffer, false);
 
-                    int adlRet = ADL.ADL_Adapter_AdapterInfo_Get(adapterBuffer, size);
+                    var adlRet = ADL.ADL_Adapter_AdapterInfo_Get(adapterBuffer, size);
                     if (adlRet == ADL.ADL_SUCCESS)
                     {
-                        osAdapterInfoData = (ADLAdapterInfoArray)Marshal.PtrToStructure(adapterBuffer, osAdapterInfoData.GetType());
-                        int isActive = 0;
+                        osAdapterInfoData =
+                            (ADLAdapterInfoArray) Marshal.PtrToStructure(adapterBuffer, osAdapterInfoData.GetType());
+                        var isActive = 0;
 
-                        for (int i = 0; i < numberOfAdapters; i++)
+                        for (var i = 0; i < numberOfAdapters; i++)
                         {
-                            ADLAdapterInfo adlAdapterInfo = osAdapterInfoData.ADLAdapterInfo[i];
+                            var adlAdapterInfo = osAdapterInfoData.ADLAdapterInfo[i];
 
                             if (adlAdapterInfo.DisplayName != displayName && displayName != null)
                             {
                                 continue;
                             }
 
-                            int adapterIndex = adlAdapterInfo.AdapterIndex;
+                            var adapterIndex = adlAdapterInfo.AdapterIndex;
 
                             if (ADL.ADL_Adapter_Active_Get != null)
                             {
@@ -100,26 +101,32 @@ namespace gui.app.gpucontroller.amd64
 
                             if (ADL.ADL_SUCCESS == adlRet)
                             {
-                                ADLDisplayInfo oneDisplayInfo = new ADLDisplayInfo();
+                                var oneDisplayInfo = new ADLDisplayInfo();
 
                                 if (ADL.ADL_Display_DisplayInfo_Get != null)
                                 {
-                                    IntPtr displayBuffer = IntPtr.Zero;
+                                    var displayBuffer = IntPtr.Zero;
 
-                                    int numberOfDisplays = 0;
-                                    adlRet = ADL.ADL_Display_DisplayInfo_Get(adlAdapterInfo.AdapterIndex, ref numberOfDisplays, out displayBuffer, 1);
+                                    var numberOfDisplays = 0;
+                                    adlRet = ADL.ADL_Display_DisplayInfo_Get(adlAdapterInfo.AdapterIndex,
+                                        ref numberOfDisplays, out displayBuffer, 1);
                                     if (ADL.ADL_SUCCESS == adlRet)
                                     {
-                                        List<ADLDisplayInfo> displayInfoData = new List<ADLDisplayInfo>();
-                                        for (int j = 0; j < numberOfDisplays; j++)
+                                        var displayInfoData = new List<ADLDisplayInfo>();
+                                        for (var j = 0; j < numberOfDisplays; j++)
                                         {
-                                            oneDisplayInfo = (ADLDisplayInfo)Marshal.PtrToStructure(new IntPtr(displayBuffer.ToInt64() + j * Marshal.SizeOf(oneDisplayInfo)), oneDisplayInfo.GetType());
+                                            oneDisplayInfo =
+                                                (ADLDisplayInfo)
+                                                    Marshal.PtrToStructure(
+                                                        new IntPtr(displayBuffer.ToInt64() +
+                                                                   j*Marshal.SizeOf(oneDisplayInfo)),
+                                                        oneDisplayInfo.GetType());
                                             displayInfoData.Add(oneDisplayInfo);
                                         }
 
-                                        for (int j = 0; j < numberOfDisplays; j++)
+                                        for (var j = 0; j < numberOfDisplays; j++)
                                         {
-                                            ADLDisplayInfo adlDisplayInfo = displayInfoData[j];
+                                            var adlDisplayInfo = displayInfoData[j];
 
                                             handle(adlDisplayInfo, adlAdapterInfo, adapterIndex);
                                         }

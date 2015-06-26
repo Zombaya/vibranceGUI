@@ -1,33 +1,40 @@
-﻿using System.IO;
-using gui.app.utils;
+﻿#region
+
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using gui.app.utils;
+
+#endregion
 
 namespace vibrance.GUI
 {
     public partial class NvidiaVibranceGUI : Form
     {
-        private NvidiaVibranceProxy v;
-        private RegistryController registryController;
-        private AutoResetEvent resetEvent;
-        public bool silenced = false;
         private const string appName = "vibranceGUI";
         private const string twitterLink = "https://twitter.com/juvlarN";
-        private const string paypalDonationLink = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JDQFNKNNEW356";
 
+        private const string paypalDonationLink =
+            "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JDQFNKNNEW356";
+
+        private readonly AutoResetEvent resetEvent;
         private bool allowVisible;
-
+        private RegistryController registryController;
+        public bool silenced = false;
+        private NvidiaVibranceProxy v;
 
         public NvidiaVibranceGUI()
         {
             const string nvidiaAdapterName = "vibranceDLL.dll";
-            string resourceName = string.Format("{0}.NVIDIA.{1}", typeof(Program).Namespace, nvidiaAdapterName);
+            var resourceName = string.Format("{0}.NVIDIA.{1}", typeof (Program).Namespace, nvidiaAdapterName);
 
-            string dllPath = CommonUtils.LoadUnmanagedLibraryFromResource(
+            var dllPath = CommonUtils.LoadUnmanagedLibraryFromResource(
                 Assembly.GetExecutingAssembly(),
                 resourceName,
                 nvidiaAdapterName);
@@ -36,7 +43,7 @@ namespace vibrance.GUI
 
             InitializeComponent();
 
-            System.Runtime.InteropServices.Marshal.PrelinkAll(typeof(NvidiaVibranceProxy));
+            Marshal.PrelinkAll(typeof (NvidiaVibranceProxy));
             resetEvent = new AutoResetEvent(false);
             backgroundWorker.WorkerReportsProgress = true;
             settingsBackgroundWorker.WorkerReportsProgress = true;
@@ -49,7 +56,7 @@ namespace vibrance.GUI
             if (!allowVisible)
             {
                 value = false;
-                if (!this.IsHandleCreated) CreateHandle();
+                if (!IsHandleCreated) CreateHandle();
             }
             base.SetVisibleCore(value);
         }
@@ -66,24 +73,30 @@ namespace vibrance.GUI
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            int vibranceIngameLevel = NvidiaVibranceProxy.NVAPI_MAX_LEVEL, vibranceWindowsLevel = NvidiaVibranceProxy.NVAPI_DEFAULT_LEVEL, refreshRate = 5000;
+            int vibranceIngameLevel = NvidiaVibranceProxy.NVAPI_MAX_LEVEL,
+                vibranceWindowsLevel = NvidiaVibranceProxy.NVAPI_DEFAULT_LEVEL,
+                refreshRate = 5000;
             bool keepActive = false, affectPrimaryMonitorOnly = false;
 
-            while (!this.IsHandleCreated)
+            while (!IsHandleCreated)
             {
-                System.Threading.Thread.Sleep(500);
+                Thread.Sleep(500);
             }
 
-            if (this.InvokeRequired)
+            if (InvokeRequired)
             {
-                this.Invoke((MethodInvoker) delegate
-                {
-                    readVibranceSettings(out vibranceIngameLevel, out vibranceWindowsLevel, out keepActive, out refreshRate, out affectPrimaryMonitorOnly);
-                });
+                Invoke(
+                    (MethodInvoker)
+                        delegate
+                        {
+                            readVibranceSettings(out vibranceIngameLevel, out vibranceWindowsLevel, out keepActive,
+                                out refreshRate, out affectPrimaryMonitorOnly);
+                        });
             }
             else
             {
-                readVibranceSettings(out vibranceIngameLevel, out vibranceWindowsLevel, out keepActive, out refreshRate, out affectPrimaryMonitorOnly);
+                readVibranceSettings(out vibranceIngameLevel, out vibranceWindowsLevel, out keepActive, out refreshRate,
+                    out affectPrimaryMonitorOnly);
             }
 
             v = new NvidiaVibranceProxy(silenced);
@@ -100,7 +113,7 @@ namespace vibrance.GUI
                 v.setSleepInterval(refreshRate);
                 v.setAffectPrimaryMonitorOnly(affectPrimaryMonitorOnly);
                 v.handleDVC();
-                bool unload = v.unloadLibraryEx();
+                var unload = v.unloadLibraryEx();
 
                 backgroundWorker.ReportProgress(2, unload);
                 resetEvent.Set();
@@ -121,8 +134,8 @@ namespace vibrance.GUI
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.Hide();
-                this.ShowInTaskbar = false;
+                Hide();
+                ShowInTaskbar = false;
                 allowVisible = false;
                 return;
             }
@@ -136,7 +149,7 @@ namespace vibrance.GUI
 
         private void trackBarIngameLevel_Scroll(object sender, EventArgs e)
         {
-            NvidiaSettingsWrapper setting = NvidiaSettingsWrapper.find(trackBarIngameLevel.Value);
+            var setting = NvidiaSettingsWrapper.find(trackBarIngameLevel.Value);
             if (setting == null)
                 return;
             v.setVibranceIngameLevel(trackBarIngameLevel.Value);
@@ -149,7 +162,7 @@ namespace vibrance.GUI
 
         private void trackBarWindowsLevel_Scroll(object sender, EventArgs e)
         {
-            NvidiaSettingsWrapper setting = NvidiaSettingsWrapper.find(trackBarWindowsLevel.Value);
+            var setting = NvidiaSettingsWrapper.find(trackBarWindowsLevel.Value);
             if (setting == null)
                 return;
             v.setVibranceWindowsLevel(trackBarWindowsLevel.Value);
@@ -165,7 +178,7 @@ namespace vibrance.GUI
             Thread.Sleep(1000);
             int ingameLevel = 0, windowsLevel = 0, refreshRate = 0;
             bool keepActive = false, affectPrimaryMonitorOnly = false;
-            this.Invoke((MethodInvoker)delegate
+            Invoke((MethodInvoker) delegate
             {
                 ingameLevel = trackBarIngameLevel.Value;
                 windowsLevel = trackBarWindowsLevel.Value;
@@ -185,12 +198,14 @@ namespace vibrance.GUI
                 listBoxLog.Items.Add("vibranceInfo.activeOutput: " + v.vibranceInfo.activeOutput);
                 listBoxLog.Items.Add("vibranceInfo.defaultHandle: " + v.vibranceInfo.defaultHandle);
 
-                listBoxLog.Items.Add("vibranceInfo.userVibranceSettingActive: " + v.vibranceInfo.userVibranceSettingActive);
-                listBoxLog.Items.Add("vibranceInfo.userVibranceSettingDefault: " + v.vibranceInfo.userVibranceSettingDefault);
+                listBoxLog.Items.Add("vibranceInfo.userVibranceSettingActive: " +
+                                     v.vibranceInfo.userVibranceSettingActive);
+                listBoxLog.Items.Add("vibranceInfo.userVibranceSettingDefault: " +
+                                     v.vibranceInfo.userVibranceSettingDefault);
                 listBoxLog.Items.Add("");
                 listBoxLog.Items.Add("");
-                this.statusLabel.Text = "Running!";
-                this.statusLabel.ForeColor = Color.Green;
+                statusLabel.Text = "Running!";
+                statusLabel.ForeColor = Color.Green;
             }
             else if (e.ProgressPercentage == 2)
             {
@@ -204,14 +219,14 @@ namespace vibrance.GUI
 
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-   //         allowVisible = true;
-   //         this.Show();
+            //         allowVisible = true;
+            //         this.Show();
 
-			//this.WindowState = FormWindowState.Normal;
-			//this.Visible = true;
+            //this.WindowState = FormWindowState.Normal;
+            //this.Visible = true;
 
-			//this.Refresh();
-			//this.ShowInTaskbar = true;
+            //this.Refresh();
+            //this.ShowInTaskbar = true;
         }
 
         private void checkBoxKeepActive_CheckedChanged(object sender, EventArgs e)
@@ -244,10 +259,10 @@ namespace vibrance.GUI
 
         private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {
-            RegistryController autostartController = new RegistryController();
-            if (this.checkBoxAutostart.Checked)
+            var autostartController = new RegistryController();
+            if (checkBoxAutostart.Checked)
             {
-                string pathToExe = "\"" + Application.ExecutablePath.ToString() + "\" -minimized";
+                var pathToExe = "\"" + Application.ExecutablePath + "\" -minimized";
                 if (!autostartController.isProgramRegistered(appName))
                 {
                     if (autostartController.registerProgram(appName, pathToExe))
@@ -257,7 +272,7 @@ namespace vibrance.GUI
                 }
                 else if (!autostartController.isStartupPathUnchanged(appName, pathToExe))
                 {
-                    if(autostartController.registerProgram(appName, pathToExe))
+                    if (autostartController.registerProgram(appName, pathToExe))
                         listBoxLog.Items.Add("Updated Autostart Path!");
                     else
                         listBoxLog.Items.Add("Updating Autostart Path failed!");
@@ -274,17 +289,17 @@ namespace vibrance.GUI
 
         private void twitterToolStripTextBox_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(NvidiaVibranceGUI.twitterLink);
+            Process.Start(twitterLink);
         }
 
         private void linkLabelTwitter_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(NvidiaVibranceGUI.twitterLink);
+            Process.Start(twitterLink);
         }
 
         private void setGuiEnabledFlag(bool flag)
         {
-            this.Invoke((MethodInvoker)delegate
+            Invoke((MethodInvoker) delegate
             {
                 this.checkBoxKeepActive.Enabled = flag;
                 this.trackBarWindowsLevel.Enabled = flag;
@@ -299,9 +314,9 @@ namespace vibrance.GUI
         {
             try
             {
-                this.statusLabel.Text = "Closing...";
-                this.statusLabel.ForeColor = Color.Red;
-                this.Update();
+                statusLabel.Text = "Closing...";
+                statusLabel.ForeColor = Color.Red;
+                Update();
                 listBoxLog.Items.Add("Initiating observer thread exit... ");
                 if (v != null && v.vibranceInfo.isInitialized)
                 {
@@ -318,7 +333,7 @@ namespace vibrance.GUI
 
         public static void Log(Exception ex)
         {
-            using (StreamWriter w = File.AppendText("vibranceGUI_log.txt"))
+            using (var w = File.AppendText("vibranceGUI_log.txt"))
             {
                 w.Write("\r\nLog Entry : ");
                 w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
@@ -327,21 +342,23 @@ namespace vibrance.GUI
                 w.WriteLine("Message: {0}", ex.Message);
                 w.WriteLine("Source: {0}", ex.Source);
                 w.WriteLine("Stacktrace: {0}", ex.StackTrace);
-                w.WriteLine("Exception String: {0}", ex.ToString());
+                w.WriteLine("Exception String: {0}", ex);
 
                 w.WriteLine("-------------------------------");
             }
         }
 
-        private void readVibranceSettings(out int vibranceIngameLevel, out int vibranceWindowsLevel, out bool keepActive, out int refreshRate, out bool affectPrimaryMonitorOnly)
+        private void readVibranceSettings(out int vibranceIngameLevel, out int vibranceWindowsLevel, out bool keepActive,
+            out int refreshRate, out bool affectPrimaryMonitorOnly)
         {
             registryController = new RegistryController();
-            this.checkBoxAutostart.Checked = registryController.isProgramRegistered(appName);
+            checkBoxAutostart.Checked = registryController.isProgramRegistered(appName);
 
-            SettingsController settingsController = new SettingsController();
-            settingsController.readVibranceSettings(GraphicsAdapter.NVIDIA, out vibranceIngameLevel, out vibranceWindowsLevel, out keepActive, out refreshRate, out affectPrimaryMonitorOnly);
+            var settingsController = new SettingsController();
+            settingsController.readVibranceSettings(GraphicsAdapter.NVIDIA, out vibranceIngameLevel,
+                out vibranceWindowsLevel, out keepActive, out refreshRate, out affectPrimaryMonitorOnly);
 
-            if (this.IsHandleCreated)
+            if (IsHandleCreated)
             {
                 //no null check needed, SettingsController will always return matching values.
                 labelWindowsLevel.Text = NvidiaSettingsWrapper.find(vibranceWindowsLevel).getPercentage;
@@ -354,9 +371,10 @@ namespace vibrance.GUI
             }
         }
 
-        private void saveVibranceSettings(int ingameLevel, int windowsLevel, bool keepActive, int refreshRate, bool affectPrimaryMonitorOnly)
+        private void saveVibranceSettings(int ingameLevel, int windowsLevel, bool keepActive, int refreshRate,
+            bool affectPrimaryMonitorOnly)
         {
-            SettingsController settingsController = new SettingsController();
+            var settingsController = new SettingsController();
 
             settingsController.setVibranceSettings(
                 ingameLevel.ToString(),
@@ -364,20 +382,20 @@ namespace vibrance.GUI
                 keepActive.ToString(),
                 refreshRate.ToString(),
                 affectPrimaryMonitorOnly.ToString()
-            );
+                );
         }
 
         private void buttonPaypal_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(NvidiaVibranceGUI.paypalDonationLink);
+            Process.Start(paypalDonationLink);
         }
 
         private void ShowWindow()
         {
             allowVisible = true;
-            this.ShowInTaskbar = true;
-            this.WindowState = FormWindowState.Normal;
-            this.Show();
+            ShowInTaskbar = true;
+            WindowState = FormWindowState.Normal;
+            Show();
         }
 
         private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)

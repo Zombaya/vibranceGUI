@@ -1,11 +1,15 @@
-﻿using System;
+﻿#region
+
+using System;
+
+#endregion
 
 namespace gui.app.gpucontroller.amd.adl64
 {
     public class ADLCheckLibrary
     {
-        private IntPtr ADLLibrary = System.IntPtr.Zero;
-        private static ADLCheckLibrary ADLCheckLibrary_ = new ADLCheckLibrary();
+        private static readonly ADLCheckLibrary ADLCheckLibrary_ = new ADLCheckLibrary();
+        private readonly IntPtr ADLLibrary = IntPtr.Zero;
 
         private ADLCheckLibrary()
         {
@@ -16,14 +20,20 @@ namespace gui.app.gpucontroller.amd.adl64
                     ADLLibrary = ADLImport.GetModuleHandle(ADLImport.Atiadl_FileName);
                 }
             }
-            catch (DllNotFoundException) { }
-            catch (EntryPointNotFoundException) { }
-            catch (Exception) { }
+            catch (DllNotFoundException)
+            {
+            }
+            catch (EntryPointNotFoundException)
+            {
+            }
+            catch (Exception)
+            {
+            }
         }
 
         ~ADLCheckLibrary()
         {
-            if (System.IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
+            if (IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
             {
                 ADLImport.ADL_Main_Control_Destroy();
             }
@@ -31,8 +41,8 @@ namespace gui.app.gpucontroller.amd.adl64
 
         public static bool IsFunctionValid(string functionName)
         {
-            bool result = false;
-            if (System.IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
+            var result = false;
+            if (IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
             {
                 if (1 == ADLImport.ADL_Main_Control_IsFunctionValid(ADLCheckLibrary_.ADLLibrary, functionName))
                 {
@@ -44,8 +54,8 @@ namespace gui.app.gpucontroller.amd.adl64
 
         public static IntPtr GetProcAddress(string functionName)
         {
-            IntPtr result = System.IntPtr.Zero;
-            if (System.IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
+            var result = IntPtr.Zero;
+            if (IntPtr.Zero != ADLCheckLibrary_.ADLLibrary)
             {
                 result = ADLImport.ADL_Main_Control_GetProcAddress(ADLCheckLibrary_.ADLLibrary, functionName);
             }

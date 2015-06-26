@@ -1,19 +1,17 @@
-﻿using Microsoft.Win32;
+﻿#region
+
 using System;
+using Microsoft.Win32;
+
+#endregion
 
 namespace vibrance.GUI
 {
-    class RegistryController : IRegistryController
+    internal class RegistryController : IRegistryController
     {
         private const string runKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         private const string vcKey = "SOFTWARE\\Microsoft\\DevDiv\\VC\\Servicing\\11.0\\RuntimeMinimum";
-
         private RegistryKey startupKey;
-
-        public RegistryController()
-        {
-
-        }
 
         public bool registerProgram(string appName, string pathToExe)
         {
@@ -78,7 +76,7 @@ namespace vibrance.GUI
                     return false;
                 }
 
-                string startUpValue = startupKey.GetValue(appName).ToString();
+                var startUpValue = startupKey.GetValue(appName).ToString();
                 if (startUpValue == pathToExe)
                 {
                     return true;

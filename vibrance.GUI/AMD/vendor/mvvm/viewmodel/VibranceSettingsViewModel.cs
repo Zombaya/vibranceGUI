@@ -1,39 +1,30 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Messaging;
-using Newtonsoft.Json;
-using gui.app.gpucontroller.amd;
 using gui.app.utils;
-using System.Diagnostics;
+using GalaSoft.MvvmLight;
+using Newtonsoft.Json;
 using vibrance.GUI.AMD.vendor;
-using System.Collections;
+
+#endregion
 
 namespace gui.app.mvvm.model
 {
     public class VibranceSettingsViewModel : ViewModelBase
     {
         private static readonly object _padlock = new object();
-
-        private readonly AmdAdapter _gpuAdapter;
-
-        private VibranceSettings _model;
-
-        private readonly string _settingsFileFullName;
-
         private readonly Action<string> _addLogItem;
-
-        private bool windowsAlreadySet = false;
-
-        private int lastSetIngameVibranceLevel;
-
+        private readonly AmdAdapter _gpuAdapter;
+        private readonly string _settingsFileFullName;
+        private VibranceSettings _model;
         private IntPtr lastSetCsgoHandle;
+        private int lastSetIngameVibranceLevel;
+        private bool windowsAlreadySet;
 
         public VibranceSettingsViewModel(Action<string> addLogItem, AmdAdapter gpuAdapter)
         {
@@ -44,20 +35,38 @@ namespace gui.app.mvvm.model
             _settingsFileFullName = Path.Combine(CommonUtils.GetVibrance_GUI_AppDataPath(), SettingsName);
         }
 
+        public string SettingsName { get; }
+
+        public VibranceSettings Model
+        {
+            get { return _model; }
+
+            private set
+            {
+                if (_model != null)
+                {
+                    _model.PropertyChanged -= HandleSettingChanged;
+                }
+
+                Set(() => Model, ref _model, value, true);
+                _model.PropertyChanged += HandleSettingChanged;
+            }
+        }
+
         private IntPtr GetCsGoHandle()
         {
             return FindWindow(IntPtr.Zero, "Counter-Strike: Global Offensive");
         }
-        
+
         public void RefreshVibranceStatus(IntPtr foregroundHwnd)
         {
-            IntPtr csgoHandle = this.GetCsGoHandle();
+            var csgoHandle = GetCsGoHandle();
 
-            if (csgoHandle == foregroundHwnd || (csgoHandle != IntPtr.Zero && this.Model.KeepVibranceOnWhenCsGoIsStarted))
+            if (csgoHandle == foregroundHwnd || (csgoHandle != IntPtr.Zero && Model.KeepVibranceOnWhenCsGoIsStarted))
             {
                 windowsAlreadySet = false;
 
-                if (csgoHandle != lastSetCsgoHandle || Model.IngameVibranceLevel != lastSetIngameVibranceLevel) 
+                if (csgoHandle != lastSetCsgoHandle || Model.IngameVibranceLevel != lastSetIngameVibranceLevel)
                 {
                     var displayName = GetDisplayName(csgoHandle);
                     _gpuAdapter.SetSaturationOnDisplay(Model.IngameVibranceLevel, displayName);
@@ -68,13 +77,14 @@ namespace gui.app.mvvm.model
             }
             else if (windowsAlreadySet == false)
             {
-                if (this.Model.KeepVibranceOnWhenCsGoIsStarted == false || csgoHandle == IntPtr.Zero)
+                if (Model.KeepVibranceOnWhenCsGoIsStarted == false || csgoHandle == IntPtr.Zero)
                 {
                     windowsAlreadySet = true;
                     foreach (var screen in Screen.AllScreens)
                     {
                         _gpuAdapter.SetSaturationOnDisplay(Model.WindowsVibranceLevel, screen.DeviceName);
-                        _addLogItem(string.Format("Vibrance set to '{0}' for '{1}'", Model.WindowsVibranceLevel, screen.DeviceName));
+                        _addLogItem(string.Format("Vibrance set to '{0}' for '{1}'", Model.WindowsVibranceLevel,
+                            screen.DeviceName));
                     }
 
                     lastSetIngameVibranceLevel = -1;
@@ -87,7 +97,7 @@ namespace gui.app.mvvm.model
         {
             foreach (var screen in Screen.AllScreens)
             {
-                _gpuAdapter.SetSaturationOnDisplay(this.Model.WindowsVibranceLevel, screen.DeviceName);
+                _gpuAdapter.SetSaturationOnDisplay(Model.WindowsVibranceLevel, screen.DeviceName);
             }
         }
 
@@ -106,27 +116,6 @@ namespace gui.app.mvvm.model
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
-
-        public string SettingsName { get; private set; }
-
-        public VibranceSettings Model
-        {
-            get
-            {
-                return _model;
-            }
-
-            private set
-            {
-                if (_model != null)
-                {
-                    _model.PropertyChanged -= HandleSettingChanged;
-                }
-
-                this.Set(() => Model, ref _model, value, true);
-                _model.PropertyChanged += HandleSettingChanged;
-            }
-        }
 
         private void HandleSettingChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -147,7 +136,11 @@ namespace gui.app.mvvm.model
         {
             lock (_padlock)
             {
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream(_settingsFileFullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite), Encoding.UTF8))
+                using (
+                    var streamWriter =
+                        new StreamWriter(
+                            new FileStream(_settingsFileFullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite),
+                            Encoding.UTF8))
                 {
                     streamWriter.Write(JsonConvert.SerializeObject(Model, Formatting.Indented));
                 }
@@ -160,9 +153,13 @@ namespace gui.app.mvvm.model
             {
                 try
                 {
-                    using (StreamReader streamReader = new StreamReader(new FileStream(_settingsFileFullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.UTF8))
+                    using (
+                        var streamReader =
+                            new StreamReader(
+                                new FileStream(_settingsFileFullName, FileMode.Open, FileAccess.Read,
+                                    FileShare.ReadWrite), Encoding.UTF8))
                     {
-                        string content = streamReader.ReadToEnd();
+                        var content = streamReader.ReadToEnd();
                         if (string.IsNullOrEmpty(content))
                         {
                             return;

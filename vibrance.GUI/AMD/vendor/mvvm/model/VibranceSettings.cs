@@ -1,17 +1,19 @@
-﻿using System;
-using System.ComponentModel;
+﻿#region
+
 using GalaSoft.MvvmLight;
+
+#endregion
 
 namespace gui.app.mvvm.model
 {
     public class VibranceSettings : ObservableObject
     {
-        private int _windowsVibranceLevel;
-        private int _ingameVibranceLevel;
         private bool _autostartVibranceGui;
+        private int _ingameVibranceLevel;
         private bool _keepVibranceOnWhenCsGoIsStarted;
-        private bool _useMultipleMonitors;
         private int _refreshRate;
+        private bool _useMultipleMonitors;
+        private int _windowsVibranceLevel;
 
         public VibranceSettings()
         {
@@ -25,80 +27,44 @@ namespace gui.app.mvvm.model
 
         public bool AutostartVibranceGui
         {
-            get
-            {
-                return _autostartVibranceGui;
-            }
+            get { return _autostartVibranceGui; }
 
-            set
-            {
-                this.Set(() => AutostartVibranceGui, ref _autostartVibranceGui, value);
-            }
+            set { Set(() => AutostartVibranceGui, ref _autostartVibranceGui, value); }
         }
 
         public bool KeepVibranceOnWhenCsGoIsStarted
         {
-            get
-            {
-                return _keepVibranceOnWhenCsGoIsStarted;
-            }
+            get { return _keepVibranceOnWhenCsGoIsStarted; }
 
-            set
-            {
-                this.Set(() => KeepVibranceOnWhenCsGoIsStarted, ref _keepVibranceOnWhenCsGoIsStarted, value);
-            }
+            set { Set(() => KeepVibranceOnWhenCsGoIsStarted, ref _keepVibranceOnWhenCsGoIsStarted, value); }
         }
 
         public bool UseMultipleMonitors
         {
-            get
-            {
-                return _useMultipleMonitors;
-            }
+            get { return _useMultipleMonitors; }
 
-            set
-            {
-                this.Set(() => UseMultipleMonitors, ref _useMultipleMonitors, value);
-            }
+            set { Set(() => UseMultipleMonitors, ref _useMultipleMonitors, value); }
         }
 
         public int WindowsVibranceLevel
         {
-            get
-            {
-                return _windowsVibranceLevel;
-            }
+            get { return _windowsVibranceLevel; }
 
-            set
-            {
-                this.Set(() => WindowsVibranceLevel, ref _windowsVibranceLevel, value);
-            }
+            set { Set(() => WindowsVibranceLevel, ref _windowsVibranceLevel, value); }
         }
 
         public int IngameVibranceLevel
         {
-            get
-            {
-                return _ingameVibranceLevel;
-            }
+            get { return _ingameVibranceLevel; }
 
-            set
-            {
-                this.Set(() => IngameVibranceLevel, ref _ingameVibranceLevel, value);
-            }
+            set { Set(() => IngameVibranceLevel, ref _ingameVibranceLevel, value); }
         }
 
         public int RefreshRate
         {
-            get
-            {
-                return _refreshRate;
-            }
+            get { return _refreshRate; }
 
-            set
-            {
-                this.Set(() => RefreshRate, ref _refreshRate, value);
-            }
+            set { Set(() => RefreshRate, ref _refreshRate, value); }
         }
     }
 }

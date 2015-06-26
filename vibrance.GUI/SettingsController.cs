@@ -1,37 +1,28 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
+#endregion
+
 namespace vibrance.GUI
 {
-
-    class SettingsController : ISettingsController
+    internal class SettingsController : ISettingsController
     {
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        static extern uint GetPrivateProfileString(
-           string lpAppName,
-           string lpKeyName,
-           string lpDefault,
-           StringBuilder lpReturnedString,
-           uint nSize,
-           string lpFileName);
+        private const string szSectionName = "Settings";
+        private const string szKeyNameInactive = "inactiveValue";
+        private const string szKeyNameActive = "activeValue";
+        private const string szKeyNameKeepActive = "keepActive";
+        private const string szKeyNameRefreshRate = "refreshRate";
+        private const string szKeyNameAffectPrimaryMonitorOnly = "affectPrimaryMonitorOnly";
 
+        private readonly string fileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                                           "\\vibranceGUI\\vibranceGUI.ini";
 
-        [DllImport("kernel32.dll", EntryPoint = "WritePrivateProfileString")]
-        private static extern bool WritePrivateProfileString(string lpAppName,
-          string lpKeyName, string lpString, string lpFileName);
-
-        const string szSectionName = "Settings";
-        const string szKeyNameInactive = "inactiveValue";
-        const string szKeyNameActive = "activeValue";
-        const string szKeyNameKeepActive = "keepActive";
-        const string szKeyNameRefreshRate = "refreshRate";
-        const string szKeyNameAffectPrimaryMonitorOnly = "affectPrimaryMonitorOnly";
-
-        private string fileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).ToString() + "\\vibranceGUI\\vibranceGUI.ini";
-
-        public bool setVibranceSettings(string ingameLevel, string windowsLevel, string keepActive, string refreshRate, string affectPrimaryMonitorOnly)
+        public bool setVibranceSettings(string ingameLevel, string windowsLevel, string keepActive, string refreshRate,
+            string affectPrimaryMonitorOnly)
         {
             if (!prepareFile())
             {
@@ -42,7 +33,8 @@ namespace vibrance.GUI
             WritePrivateProfileString(szSectionName, szKeyNameInactive, windowsLevel, fileName);
             WritePrivateProfileString(szSectionName, szKeyNameKeepActive, keepActive, fileName);
             WritePrivateProfileString(szSectionName, szKeyNameRefreshRate, refreshRate, fileName);
-            WritePrivateProfileString(szSectionName, szKeyNameAffectPrimaryMonitorOnly, affectPrimaryMonitorOnly, fileName);
+            WritePrivateProfileString(szSectionName, szKeyNameAffectPrimaryMonitorOnly, affectPrimaryMonitorOnly,
+                fileName);
 
             return (Marshal.GetLastWin32Error() == 0);
         }
@@ -54,32 +46,18 @@ namespace vibrance.GUI
                 return false;
             }
 
-            WritePrivateProfileString(szSectionName, szKeyName, value.ToString(), fileName);
+            WritePrivateProfileString(szSectionName, szKeyName, value, fileName);
 
             return (Marshal.GetLastWin32Error() == 0);
         }
 
-        private bool prepareFile()
+        public void readVibranceSettings(GraphicsAdapter graphicsAdapter, out int vibranceIngameLevel,
+            out int vibranceWindowsLevel, out bool keepActive, out int refreshRate, out bool affectPrimaryMonitorOnly)
         {
-            if (!isFileExisting(fileName))
-            {
-                StreamWriter sw = new StreamWriter(fileName);
-                sw.Close();
-                if (!isFileExisting(fileName))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public void readVibranceSettings(GraphicsAdapter graphicsAdapter, out int vibranceIngameLevel, out int vibranceWindowsLevel, out bool keepActive, out int refreshRate, out bool affectPrimaryMonitorOnly)
-        {
-            int defaultLevel = 0; 
-            int maxLevel = 0;
-            int defaultRefreshRate = 0;
-            int minRefreshRate = 0;
+            var defaultLevel = 0;
+            var maxLevel = 0;
+            var defaultRefreshRate = 0;
+            var minRefreshRate = 0;
             if (graphicsAdapter == GraphicsAdapter.NVIDIA)
             {
                 defaultLevel = NvidiaVibranceProxy.NVAPI_DEFAULT_LEVEL;
@@ -99,10 +77,10 @@ namespace vibrance.GUI
                 return;
             }
 
-            string szDefault = "";
+            var szDefault = "";
 
-            StringBuilder szValueActive = new StringBuilder(1024);
-            
+            var szValueActive = new StringBuilder(1024);
+
             GetPrivateProfileString(szSectionName,
                 szKeyNameActive,
                 szDefault,
@@ -110,7 +88,7 @@ namespace vibrance.GUI
                 Convert.ToUInt32(szValueActive.Capacity),
                 fileName);
 
-            StringBuilder szValueInactive = new StringBuilder(1024);
+            var szValueInactive = new StringBuilder(1024);
             GetPrivateProfileString(szSectionName,
                 szKeyNameInactive,
                 szDefault,
@@ -118,7 +96,7 @@ namespace vibrance.GUI
                 Convert.ToUInt32(szValueInactive.Capacity),
                 fileName);
 
-            StringBuilder szValueRefreshRate = new StringBuilder(1024);
+            var szValueRefreshRate = new StringBuilder(1024);
             GetPrivateProfileString(szSectionName,
                 szKeyNameRefreshRate,
                 szDefault,
@@ -127,7 +105,7 @@ namespace vibrance.GUI
                 fileName);
 
 
-            StringBuilder szValueKeepActive = new StringBuilder(1024);
+            var szValueKeepActive = new StringBuilder(1024);
             GetPrivateProfileString(szSectionName,
                 szKeyNameKeepActive,
                 szDefault,
@@ -135,7 +113,7 @@ namespace vibrance.GUI
                 Convert.ToUInt32(szValueKeepActive.Capacity),
                 fileName);
 
-            StringBuilder szValueAffectPrimaryMonitorOnly = new StringBuilder(1024);
+            var szValueAffectPrimaryMonitorOnly = new StringBuilder(1024);
             GetPrivateProfileString(szSectionName,
                 szKeyNameAffectPrimaryMonitorOnly,
                 szDefault,
@@ -167,6 +145,34 @@ namespace vibrance.GUI
                 vibranceIngameLevel = maxLevel;
             if (refreshRate < minRefreshRate)
                 refreshRate = defaultRefreshRate;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern uint GetPrivateProfileString(
+            string lpAppName,
+            string lpKeyName,
+            string lpDefault,
+            StringBuilder lpReturnedString,
+            uint nSize,
+            string lpFileName);
+
+        [DllImport("kernel32.dll", EntryPoint = "WritePrivateProfileString")]
+        private static extern bool WritePrivateProfileString(string lpAppName,
+            string lpKeyName, string lpString, string lpFileName);
+
+        private bool prepareFile()
+        {
+            if (!isFileExisting(fileName))
+            {
+                var sw = new StreamWriter(fileName);
+                sw.Close();
+                if (!isFileExisting(fileName))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private bool isFileExisting(string szFilename)
