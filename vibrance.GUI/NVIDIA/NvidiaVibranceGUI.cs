@@ -172,7 +172,7 @@ namespace vibrance.GUI
                 ingameLevel = trackBarIngameLevel.Value;
                 windowsLevel = trackBarWindowsLevel.Value;
                 keepActive = checkBoxKeepActive.Checked;
-                refreshRate = int.Parse(textBoxRefreshRate.Text);
+                refreshRate = 5000;
                 affectPrimaryMonitorOnly = checkBoxPrimaryMonitorOnly.Checked;
             });
             saveVibranceSettings(ingameLevel, windowsLevel, keepActive, refreshRate, affectPrimaryMonitorOnly);
@@ -214,35 +214,6 @@ namespace vibrance.GUI
 
 			this.Refresh();
 			this.ShowInTaskbar = true;
-        }
-
-        private void textBoxRefreshRate_TextChanged(object sender, EventArgs e)
-        {
-            if (v != null)
-            {
-                int refreshRate = -1;
-
-                if (!int.TryParse(textBoxRefreshRate.Text, out refreshRate))
-                {
-                    textBoxRefreshRate.Text = "5000";
-                }
-                else if (refreshRate > 200)
-                {
-                    if (v != null)
-                    {
-                        v.setSleepInterval(refreshRate);
-                        if (!settingsBackgroundWorker.IsBusy)
-                        {
-                            settingsBackgroundWorker.RunWorkerAsync();
-                        }
-                        listBoxLog.Items.Add("Refresh rate has been set to: " + refreshRate + " ms");
-                    }
-                }
-                else
-                {
-                    listBoxLog.Items.Add("The refresh rate must be greater than 200 ms!");
-                }
-            }
         }
 
         private void checkBoxKeepActive_CheckedChanged(object sender, EventArgs e)
@@ -320,7 +291,6 @@ namespace vibrance.GUI
                 this.checkBoxKeepActive.Enabled = flag;
                 this.trackBarWindowsLevel.Enabled = flag;
                 this.trackBarIngameLevel.Enabled = flag;
-                this.textBoxRefreshRate.Enabled = flag;
                 this.checkBoxAutostart.Enabled = flag;
                 this.checkBoxPrimaryMonitorOnly.Enabled = flag;
                 //this.checkBoxMonitors.Enabled = flag;
@@ -382,7 +352,6 @@ namespace vibrance.GUI
                 trackBarWindowsLevel.Value = vibranceWindowsLevel;
                 trackBarIngameLevel.Value = vibranceIngameLevel;
                 checkBoxKeepActive.Checked = keepActive;
-                textBoxRefreshRate.Text = refreshRate.ToString();
                 checkBoxPrimaryMonitorOnly.Checked = affectPrimaryMonitorOnly;
             }
         }
