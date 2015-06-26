@@ -55,6 +55,8 @@ namespace vibrance.GUI
                 }
                 return;
             }
+            vibranceGUI.WindowState = FormWindowState.Minimized;
+            vibranceGUI.ShowInTaskbar = false;
             if (args.Contains("-minimized"))
             {
                 vibranceGUI.WindowState = FormWindowState.Minimized;
