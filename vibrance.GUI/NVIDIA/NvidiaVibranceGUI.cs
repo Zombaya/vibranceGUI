@@ -131,20 +131,12 @@ namespace vibrance.GUI
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true;
-                Hide();
-                ShowInTaskbar = false;
-                allowVisible = false;
-                return;
-            }
             cleanUp();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            this.Close(); 
         }
 
         private void trackBarIngameLevel_Scroll(object sender, EventArgs e)
