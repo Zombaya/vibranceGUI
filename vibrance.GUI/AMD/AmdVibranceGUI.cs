@@ -20,11 +20,6 @@ namespace vibrance.GUI
     public partial class AmdVibranceGUI : Form
     {
         private const string appName = "vibranceGUI";
-        private const string twitterLink = "https://twitter.com/juvlarN";
-
-        private const string paypalDonationLink =
-            "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JDQFNKNNEW356";
-
         private readonly AutoResetEvent resetEvent;
         private readonly AmdVibranceAdapter v;
         private bool allowVisible;
