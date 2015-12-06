@@ -18,7 +18,6 @@ namespace vibrance.GUI
     public partial class NvidiaVibranceGUI : Form
     {
         private const string appName = "vibranceGUI";
-        private const string twitterLink = "https://twitter.com/juvlarN";
 
         private const string paypalDonationLink =
             "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JDQFNKNNEW356";
@@ -279,16 +278,6 @@ namespace vibrance.GUI
             }
         }
 
-        private void twitterToolStripTextBox_Click(object sender, EventArgs e)
-        {
-            Process.Start(twitterLink);
-        }
-
-        private void linkLabelTwitter_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start(twitterLink);
-        }
-
         private void setGuiEnabledFlag(bool flag)
         {
             Invoke((MethodInvoker) delegate
@@ -375,11 +364,6 @@ namespace vibrance.GUI
                 refreshRate.ToString(),
                 affectPrimaryMonitorOnly.ToString()
                 );
-        }
-
-        private void buttonPaypal_Click(object sender, EventArgs e)
-        {
-            Process.Start(paypalDonationLink);
         }
 
         private void ShowWindow()
